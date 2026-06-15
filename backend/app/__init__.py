@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -42,6 +42,20 @@ def create_app():
     @app.route('/internal/flag')
     def internal_flag():
         return {'flag': 'FloatCTF{ssrf_caught_the_internal_flag}'}
+
+    # Serve frontend static files in production
+    static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static')
+    if os.path.exists(static_dir):
+        @app.route('/', defaults={'path': ''})
+        @app.route('/<path:path>')
+        def serve_frontend(path):
+            if path.startswith('api/') or path.startswith('internal/'):
+                from flask import jsonify
+                return jsonify({'error': 'Not found'}), 404
+            file_path = os.path.join(static_dir, path) if path else os.path.join(static_dir, 'index.html')
+            if os.path.isfile(file_path):
+                return send_from_directory(static_dir, path if path else 'index.html')
+            return send_from_directory(static_dir, 'index.html')
 
     with app.app_context():
         from app import models
