@@ -46,15 +46,34 @@ def create_app():
     # Serve frontend static files in production
     static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static')
     if os.path.exists(static_dir):
-        @app.route('/', defaults={'path': ''})
+        app.static_folder = static_dir
+        app.static_url_path = ''
+
+        @app.route('/')
+        def serve_index():
+            return send_from_directory(static_dir, 'index.html')
+
+        @app.route('/assets/<path:filename>')
+        def serve_assets(filename):
+            return send_from_directory(os.path.join(static_dir, 'assets'), filename)
+
+        @app.route('/images/<path:filename>')
+        def serve_images(filename):
+            return send_from_directory(os.path.join(static_dir, 'images'), filename)
+
+        @app.route('/favicon.svg')
+        def serve_favicon():
+            return send_from_directory(static_dir, 'favicon.svg')
+
+        # SPA fallback: all other non-API paths serve index.html
         @app.route('/<path:path>')
-        def serve_frontend(path):
+        def serve_spa_fallback(path):
             if path.startswith('api/') or path.startswith('internal/'):
                 from flask import jsonify
                 return jsonify({'error': 'Not found'}), 404
-            file_path = os.path.join(static_dir, path) if path else os.path.join(static_dir, 'index.html')
+            file_path = os.path.join(static_dir, path)
             if os.path.isfile(file_path):
-                return send_from_directory(static_dir, path if path else 'index.html')
+                return send_from_directory(static_dir, path)
             return send_from_directory(static_dir, 'index.html')
 
     with app.app_context():
