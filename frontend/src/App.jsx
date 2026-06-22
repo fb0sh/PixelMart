@@ -63,6 +63,7 @@ function App() {
             <div className="flex items-center space-x-1">
               <NavLink to="/" active={isActive('/')}>首页</NavLink>
               <NavLink to="/shop" active={isActive('/shop')}>商城</NavLink>
+              <NavLink to="/feedback" active={isActive('/feedback')}>反馈</NavLink>
               <NavLink to="/challenges" active={isActive('/challenges')}>挑战</NavLink>
               <NavLink to="/flag-submit" active={isActive('/flag-submit')}>
                 🏁 提交
